@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Ranking Pingwinów</title>
+
+<style>
+body {
+    background: linear-gradient(to bottom, #a0e9ff, #ffffff);
+    text-align: center;
+    font-family: Arial;
+}
+
+h1 {
+    margin-top: 30px;
+}
+
+.gracz {
+    margin-bottom: 40px;
+}
+
+.kra {
+    width: 80px;
+    height: 40px;
+    background: #dff6ff;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 10px;
+    position: relative;
+}
+
+.pingwin {
+    font-size: 40px;
+    position: absolute;
+    top: -45px;
+    left: 15px;
+    animation: skok 1s infinite alternate;
+}
+
+@keyframes skok {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-10px); }
+}
+
+#adminPanel {
+    margin: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    display: none;
+}
+
+input, button {
+    padding: 8px;
+    margin: 5px;
+}
+</style>
+
+</head>
+<body>
+
+<h1>🐧 Ranking Pingwinów 🐧</h1>
+
+<button onclick="pokazLogowanie()">Panel Admina</button>
+
+<div id="login" style="display:none;">
+    <h3>Logowanie</h3>
+    <input type="password" id="haslo" placeholder="Hasło">
+    <button onclick="zaloguj()">Zaloguj</button>
+</div>
+
+<div id="adminPanel">
+    <h2>Panel Admina</h2>
+    <input type="text" id="nick" placeholder="Nick gracza">
+    <input type="number" id="punkty" placeholder="Punkty">
+    <button onclick="dodajLubAktualizuj()">Zapisz</button>
+</div>
+
+<div id="ranking"></div>
+
+<script>
+let gracze = JSON.parse(localStorage.getItem("ranking")) || [
+    { nick: "Patrol 1", punkty: 3 },
+    { nick: "Patrol 2", punkty: 5 },
+   
+];
+
+function zapiszRanking(){
+    localStorage.setItem("ranking", JSON.stringify(gracze));
+}
+
+function pokazLogowanie(){
+    document.getElementById("login").style.display = "block";
+}
+
+function zaloguj(){
+    const haslo = document.getElementById("haslo").value;
+    if(haslo === "admin123"){   // ← tutaj zmień hasło
+        document.getElementById("adminPanel").style.display = "block";
+        document.getElementById("login").style.display = "none";
+    } else {
+        alert("Błędne hasło!");
+    }
+}
+
+function dodajLubAktualizuj(){
+    const nick = document.getElementById("nick").value;
+    const punkty = parseInt(document.getElementById("punkty").value);
+
+    if(!nick || isNaN(punkty)) return;
+
+    const istnieje = gracze.find(g => g.nick === nick);
+
+    if(istnieje){
+        istnieje.punkty = punkty;
+    } else {
+        gracze.push({ nick, punkty });
+    }
+
+    zapiszRanking();
+    renderRanking();
+}
+
+function renderRanking(){
+    const rankingDiv = document.getElementById("ranking");
+    rankingDiv.innerHTML = "";
+
+    gracze.sort((a,b) => b.punkty - a.punkty);
+
+    gracze.forEach(gracz => {
+        const kontener = document.createElement("div");
+        kontener.classList.add("gracz");
+
+        const opis = document.createElement("h2");
+        opis.innerText = gracz.nick + " - " + gracz.punkty + " pkt";
+        kontener.appendChild(opis);
+
+        for(let i=1; i<=gracz.punkty; i++){
+            const kra = document.createElement("div");
+            kra.classList.add("kra");
+
+            if(i === gracz.punkty){
+                const pingwin = document.createElement("div");
+                pingwin.classList.add("pingwin");
+                pingwin.innerText = "🐧";
+                kra.appendChild(pingwin);
+            }
+
+            kontener.appendChild(kra);
+        }
+
+        rankingDiv.appendChild(kontener);
+    });
+}
+
+renderRanking();
+</script>
+
+</body>
+</html>
